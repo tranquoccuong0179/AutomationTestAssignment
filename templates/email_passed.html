@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: Arial, sans-serif; color: #1f2328; line-height: 1.6;">
+    <p>Hello Team,</p>
+    <p>The automation test has been completed successfully.</p>
+
+    <h3 style="margin-bottom: 8px;">Test Summary</h3>
+    <table style="border-collapse: collapse;">
+        <tr>
+            <td style="padding: 2px 12px 2px 0;"><b>Status:</b></td>
+            <td style="color: #1a7f37; font-weight: bold;">PASSED</td>
+        </tr>
+        <tr>
+            <td style="padding: 2px 12px 2px 0;"><b>Environment:</b></td>
+            <td>{{ environment }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 2px 12px 2px 0;"><b>Execution Time:</b></td>
+            <td>{{ execution_time }}</td>
+        </tr>
+    </table>
+
+    <p style="margin-top: 16px;">File da tai duoc dinh kem trong email nay: <b>{{ zip_filename }}</b></p>
+
+    <hr style="margin-top: 24px; border: none; border-top: 1px solid #d1d9e0;">
+    <p style="color: #656d76; font-size: 12px;">
+        Email nay duoc gui tu dong boi Automation Framework.
+    </p>
+</body>
+</html>
