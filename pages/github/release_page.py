@@ -31,9 +31,9 @@ RELEASES_LATEST_URL = f"https://github.com/{REPO_OWNER}/{REPO_NAME}/releases/lat
 # ==== Locators (CAN TU KIEM TRA LAI BANG DEVTOOLS) ====
 # Link tai "Source code (zip)" trong phan Assets cua trang release
 SOURCE_CODE_ZIP_LINK = (
-    By.XPATH,
-    "//a[contains(@href, '.zip') and (contains(text(), 'Source code') or contains(@href, '/archive/'))]",
-)
+        By.XPATH,
+        "//a[contains(@href, '/archive/refs/tags/') and contains(@href, '.zip')]",
+    )
 
 # Phan tu de xac nhan trang release da load xong (vd: tieu de tag/version)
 RELEASE_TAG_HEADING = (By.CSS_SELECTOR, "h1, [data-testid='latest-release-tag'], .f1")
@@ -71,4 +71,11 @@ class ReleasePage(BasePage):
     def download_source_zip(self) -> None:
         """Click vao link 'Source code (zip)' de bat dau tai file .zip."""
         logger.info("Dang click de tai Source code (zip)")
-        self.safe_click(SOURCE_CODE_ZIP_LINK)
+        self.driver.execute_script("""
+              document.querySelectorAll("details").forEach(el => el.open = true);
+          """)
+        element = self.wait_visible(SOURCE_CODE_ZIP_LINK)
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({block: 'center'});", element
+        )
+        self.driver.execute_script("arguments[0].click();", element)

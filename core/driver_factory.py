@@ -25,7 +25,7 @@ def _build_chrome_options() -> Options:
     options = Options()
 
     if HEADLESS:
-        options.add_argument("--headless=false")
+        options.add_argument("--headless=new")
         logger.info("Chay Chrome o che do headless")
 
     # Cac flag on dinh khi chay trong moi truong CI/Docker (khong co GUI thuc)

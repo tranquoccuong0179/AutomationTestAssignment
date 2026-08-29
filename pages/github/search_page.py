@@ -28,7 +28,8 @@ GITHUB_HOME_URL = "https://github.com"
 
 # ==== Locators (CAN TU KIEM TRA LAI BANG DEVTOOLS) ====
 # O tim kiem o dau trang (header), thuong co dang <input type="text" placeholder="Search or jump to...">
-SEARCH_BOX = (By.CSS_SELECTOR, "input[placeholder*='Search'], input[name='q']")
+SEARCH_TRIGGER = (By.CSS_SELECTOR, "button.header-search-button, [data-target='qbsearch-input.inputButton']")
+SEARCH_INPUT = (By.CSS_SELECTOR, "input#query-builder-test, input[name='query-builder-test']")
 
 # Item dau tien trong danh sach ket qua repository (thuong la <a> chua ten repo, vd "twbs/bootstrap")
 FIRST_RESULT_LINK = (By.CSS_SELECTOR, "a[href*='/twbs/bootstrap'], .search-title a, [data-testid='results-list'] a")
@@ -52,9 +53,16 @@ class SearchPage(BasePage):
         """
 
         logger.info("Dang tim kiem tu khoa: %s", keyword)
-        self.input_text(SEARCH_BOX, keyword)
-        search_box = self.wait_visible(SEARCH_BOX)
-        search_box.send_keys(Keys.ENTER)
+    
+        if self.is_element_present(SEARCH_TRIGGER, timeout=2):
+          try:
+            self.safe_click(SEARCH_TRIGGER)
+            self.input_text(SEARCH_INPUT, f"{keyword}{Keys.ENTER}")
+            return
+          except Exception:
+            pass
+        logger.info("Header search chua san sang, mo truc tiep link query: %s", keyword)
+        self.open(f"https://github.com/search?q={keyword}&type=repositories")
 
     def click_first_result(self) -> None:
         """
