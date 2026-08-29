@@ -16,9 +16,9 @@ scope mac dinh, moi ham se bi cap 1 Chrome MOI, mat dang nhap giua cac buoc.
 
 from configs.settings import GITHUB_USERNAME, GITHUB_PASSWORD
 from core.logger import get_logger
-from pages.login_page import LoginPage
-from pages.search_page import SearchPage
-from pages.release_page import ReleasePage
+from pages.github.login_page import LoginPage
+from pages.github.search_page import SearchPage
+from pages.github.release_page import ReleasePage
 from services import file_service
 from utils.datetime_helper import get_today_str
 
