@@ -25,7 +25,7 @@ from utils.screenshot_helper import capture_screenshot
 logger = get_logger(__name__)
 
 
-@pytest.fixture
+@pytest.fixture(scope="class")
 def driver():
     """
     Fixture tao driver Chrome cho MOI ham test_xxx() co khai bao tham so "driver".

@@ -2,51 +2,21 @@
 report_service.py: KHO DU LIEU THUAN (data holder) cho ket qua 1 phien test.
 
 QUAN TRONG - file nay KHONG PHAI la pytest plugin, KHONG dinh gi den
-driver/Selenium - chi la 1 class de LUU va DINH DANG du lieu, dung nguyen
-tac "services/ khong bao gio dung driver" da thong nhat xuyen suot project.
+driver/Selenium - chi la 1 class de LUU va DINH DANG du lieu.
 
 Cac hook pytest THAT (pytest_sessionstart, pytest_terminal_summary,
 pytest_runtest_makereport) duoc dat trong tests/conftest.py - vi hook
-pytest_runtest_makereport CAN truy cap "driver" (qua item.funcargs) de
-chup screenshot, ma dieu do vi pham quy tac "services/ khong dung driver"
-neu dat o day. conftest.py se GOI cac ham PLAIN (khong phai hook) cua class
-nay (start(), finish(), record_failure()) de ghi lai ket qua.
+pytest_runtest_makereport CAN truy cap "driver" de chup screenshot, dieu
+do se vi pham quy tac "services/ khong dung driver" neu dat o day.
+conftest.py GOI cac ham PLAIN cua class nay (start, finish, record_failure)
+de ghi lai ket qua.
 
-Dung 1 INSTANCE DUNG CHUNG (singleton o cuoi file) de ca conftest.py (ghi
-du lieu vao) va run.py (doc du lieu ra, sau khi pytest.main() chay xong)
-deu tham chieu DUNG 1 object nay - khong tao instance moi o tung noi.
-
-Cach dung o tests/conftest.py (ghi du lieu):
-    from services.report_service import collector
-
-    def pytest_sessionstart(session):
-        collector.start()
-
-    def pytest_terminal_summary(terminalreporter, exitstatus, config):
-        collector.finish(
-            passed=len(terminalreporter.stats.get("passed", [])),
-            failed=len(terminalreporter.stats.get("failed", [])),
-            skipped=len(terminalreporter.stats.get("skipped", [])),
-            error=len(terminalreporter.stats.get("error", [])),
-        )
-
-Cach dung o run.py (doc du lieu, SAU KHI pytest.main() chay xong):
-    from services.report_service import collector
-
-    summary = collector.to_summary_dict()
-    if collector.is_all_passed():
-        email_service.notify_success(zip_path=..., summary=summary)
-    else:
-        failure = collector.get_first_failure()
-        email_service.notify_failure(
-            failed_step=failure["failed_step"],
-            error_message=failure["error_message"],
-            screenshot_path=failure["screenshot_path"],
-            summary=summary,
-        )
+Dung 1 SINGLETON (collector, o cuoi file) de conftest.py (ghi) va run.py
+(doc, sau khi pytest.main() chay xong) deu tham chieu DUNG 1 object.
 """
 
 import time
+from typing import Optional
 
 from core.logger import get_logger
 from utils.datetime_helper import format_duration, now_readable
@@ -61,24 +31,23 @@ class ResultCollector:
     va DOC (goi tu run.py).
     """
 
-    def __init__(self):
-        self._start_time: float = None
-        self._end_time: float = None
+    def __init__(self) -> None:
+        self._start_time: Optional[float] = None
+        self._end_time: Optional[float] = None
         self.total_tests: int = 0
         self.passed: int = 0
         self.failed: int = 0
         self.skipped: int = 0
         self.error: int = 0
-        self.failures: list = []   # danh sach dict, moi phan tu la 1 test bi fail
+        self.failures: list[dict] = []
 
     def start(self) -> None:
         """
-        Ghi lai thoi diem bat dau. Goi tu conftest.py, trong hook pytest_sessionstart.
+        Ghi lai thoi diem bat dau va RESET toan bo state cu ve 0.
 
-        QUAN TRONG: vi collector la SINGLETON (dung chung, khong tao moi
-        moi lan chay), can RESET toan bo du lieu cu ve 0 o day - neu khong,
-        du lieu con sot tu lan chay pytest TRUOC (vd: failures cu) se lan
-        vao ket qua cua lan chay nay, gay sai lech.
+        Bat buoc phai reset vi collector la SINGLETON (dung chung, khong
+        tao moi moi lan chay) - neu khong, du lieu (dac biet la failures)
+        tu lan chay TRUOC se con sot, lam sai ket qua cua lan chay nay.
         """
         self._start_time = time.time()
         self._end_time = None
@@ -93,8 +62,8 @@ class ResultCollector:
     def finish(self, passed: int, failed: int, skipped: int = 0, error: int = 0) -> None:
         """
         Ghi lai ket qua CUOI CUNG - cac tham so nay PHAI lay tu
-        terminalreporter.stats (xem docstring dau file), KHONG tu dem/tu
-        suy luan lai (tranh sai so khi co test Skip/Error).
+        terminalreporter.stats (pytest tu phan loai chinh xac), KHONG tu
+        dem/tu suy luan lai.
         """
         self._end_time = time.time()
         self.passed = passed
@@ -109,10 +78,9 @@ class ResultCollector:
 
     def record_failure(self, failed_step: str, error_message: str, screenshot_path: str) -> None:
         """
-        Ghi lai chi tiet 1 test bi fail (buoc nao, loi gi, screenshot dau).
-        Goi tu conftest.py, trong hook pytest_runtest_makereport - vi hook
-        do can driver (de chup anh), nen KHONG dat logic chup anh o day,
-        chi nhan KET QUA (duong dan anh) da duoc chup san tu ben ngoai.
+        Ghi lai chi tiet 1 test bi fail. Goi tu conftest.py (hook
+        pytest_runtest_makereport) - hook do can driver de chup anh, nen
+        CHI nhan KET QUA (duong dan anh) da chup san, khong tu chup o day.
         """
         self.failures.append({
             "failed_step": failed_step,
@@ -122,14 +90,13 @@ class ResultCollector:
         logger.error("Ghi nhan test fail: %s | Loi: %s", failed_step, error_message)
 
     def get_first_failure(self) -> dict:
-        """
-        Tra ve chi tiet CUA TEST FAIL DAU TIEN (dung cho notify_failure(),
-        vi email chi bao 1 loi dai dien, khong liet ke het moi loi neu co
-        nhieu test cung fail).
-        Tra ve dict rong neu khong co fail nao duoc ghi nhan.
-        """
+        """Tra ve chi tiet test fail dau tien (dung cho notify_failure())."""
         if not self.failures:
-            return {"failed_step": "Khong xac dinh", "error_message": "Khong co chi tiet loi", "screenshot_path": ""}
+            return {
+                "failed_step": "Khong xac dinh",
+                "error_message": "Khong co chi tiet loi",
+                "screenshot_path": "",
+            }
         return self.failures[0]
 
     def get_execution_time(self) -> str:
@@ -140,8 +107,14 @@ class ResultCollector:
         return format_duration(self._start_time, self._end_time)
 
     def is_all_passed(self) -> bool:
-        """True neu khong co test nao FAIL hoac ERROR (skip khong tinh la that bai)."""
-        return self.failed == 0 and self.error == 0 and self.total_tests > 0
+        """
+        True neu tat ca test deu PASS hop le:
+        - Khong co test FAIL hoac ERROR.
+        - Co it nhat 1 test PASS THAT SU (khong tinh la "toan bo pass" neu
+          moi test deu bi SKIP - tranh gui nham email "PASSED" khi thuc ra
+          khong co gi duoc xac nhan chay dung).
+        """
+        return self.failed == 0 and self.error == 0 and self.passed > 0
 
     def to_summary_dict(self) -> dict:
         """Dong goi ket qua thanh 1 dict (DTO), dua vao email_service.py qua **summary."""
