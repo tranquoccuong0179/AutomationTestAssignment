@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Tim va load file .env o thu muc goc project
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
@@ -21,19 +20,15 @@ def _get_int(key: str, default: int) -> int:
         return default
 
 
-# ==== GitHub credentials ====
 GITHUB_USERNAME = os.getenv("GITHUB_USERNAME", "")
 GITHUB_PASSWORD = os.getenv("GITHUB_PASSWORD", "")
 
-# ==== Browser config ====
 BROWSER = os.getenv("BROWSER", "chrome").lower()
 HEADLESS = _get_bool("HEADLESS", default=False)
 IMPLICIT_WAIT = _get_int("IMPLICIT_WAIT", default=10)
 
-# ==== Download config ====
 DOWNLOAD_DIR = str((BASE_DIR / os.getenv("DOWNLOAD_DIR", "./downloads")).resolve())
 
-# ==== SMTP config ====
 SMTP_HOST = os.getenv("SMTP_HOST", "")
 SMTP_PORT = _get_int("SMTP_PORT", default=587)
 SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")

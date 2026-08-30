@@ -1,19 +1,3 @@
-"""
-smtp_client.py: Ket noi va gui email qua giao thuc SMTP thuan tuy.
-
-CHI biet: nhan subject/body/attachment -> gui di.
-KHONG biet: noi dung email la PASSED hay FAILED (do la viec cua services/email_service.py).
-
-Cach dung o noi khac:
-    from utils.smtp_client import send_email
-
-    send_email(
-        subject="Automation Test Result - PASSED",
-        body_html="<h1>Test passed</h1>",
-        attachments=["downloads/20260827_ThuVien_Bootstrap_v5.3.8.zip"]
-    )
-"""
-
 import smtplib
 import mimetypes
 from email.message import EmailMessage
@@ -34,9 +18,8 @@ logger = get_logger(__name__)
 
 
 def _attach_file(message: EmailMessage, file_path: str) -> None:
-    """Doc 1 file tu disk va dinh kem vao email message."""
     path = Path(file_path)
-    if not path.exists():
+    if not path.is_file():
         logger.warning("File dinh kem khong ton tai, bo qua: %s", file_path)
         return
 
@@ -56,13 +39,6 @@ def send_email(
     attachments: Optional[List[str]] = None,
     to_email: Optional[str] = None,
 ) -> bool:
-    """
-    Gui 1 email qua SMTP.
-
-    Tra ve True neu gui thanh cong, False neu that bai
-    (khong raise exception de khong lam crash toan bo test suite
-    chi vi ly do gui mail loi).
-    """
     recipient = to_email or EMAIL_TO
 
     message = EmailMessage()
@@ -85,6 +61,6 @@ def send_email(
         logger.info("Da gui email thanh cong den %s (subject=%s)", recipient, subject)
         return True
 
-    except Exception as e:
+    except (smtplib.SMTPException, OSError) as e:
         logger.error("Gui email that bai: %s", str(e))
         return False
