@@ -7,16 +7,19 @@ Ket hop: constants/ (subject) + templates/ (khung HTML) + jinja2 (render)
 KHAC voi utils/smtp_client.py (chi biet gui payload tho) - file nay BIET RO
 nghiep vu: PASSED thi soan gi, FAILED thi soan gi, dinh kem file nao.
 
-Cach dung o tests/ hoac run.py:
+Cach dung o run.py (nhan summary dict tu report_service.ExecutionTracker):
     from services.email_service import notify_success, notify_failure
+    from services.report_service import ExecutionTracker
 
-    notify_success(zip_path="downloads/20260827_ThuVien_Bootstrap_v5.3.8.zip",
-                    execution_time="00:05:32", total_tests=4)
+    summary = tracker.to_summary_dict()
+    # summary = {"execution_time": "00:05:32", "total_tests": 4, "passed": 4, "failed": 0, "is_all_passed": True}
+
+    notify_success(zip_path="downloads/20260827_ThuVien_Bootstrap_v5.3.8.zip", summary=summary)
 
     notify_failure(failed_step="test_02_search_and_download",
                     error_message="TimeoutException: khong tim thay nut Download",
                     screenshot_path="reports/screenshots/test_02_xxx.png",
-                    execution_time="00:02:10")
+                    summary=summary)
 """
 
 from pathlib import Path
@@ -36,33 +39,34 @@ TEMPLATES_DIR = BASE_DIR / "templates"
 _jinja_env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
 
 
-def notify_success(zip_path: str, execution_time: str, total_tests: int) -> bool:
+def notify_success(zip_path: str, summary: dict) -> bool:
+    """
+    Soan va gui email bao PASSED, dinh kem file .zip vua tai.
+
+    summary: dict tra ve tu ExecutionTracker.to_summary_dict(), toi thieu
+        can co key "execution_time". Nhan nguyen dict (khong liet ke tung
+        tham so rieng) de sau nay them truong moi vao summary KHONG PHAI
+        sua chu ky ham nay.
+
+    Tra ve True/False theo ket qua gui (khong raise, xem ly do o smtp_client.py).
+    """
     logger.info("Dang soan email PASSED...")
 
-    # SỬA LẠI THÀNH email_passed.html
     template = _jinja_env.get_template("email_passed.html")
-
-    zip_name = Path(zip_path).name if zip_path else "No file"
-
     body_html = template.render(
-        execution_time=execution_time,
-        total_tests=total_tests,
-        zip_filename=zip_name,
+        zip_filename=Path(zip_path).name,
         environment=BROWSER.capitalize(),
+        **summary,
     )
-
-    attachments = [zip_path] if zip_path and Path(zip_path).is_file() else []
 
     return send_email(
         subject=SUBJECT_PASSED,
         body_html=body_html,
-        attachments=attachments,
+        attachments=[zip_path],
     )
 
 
-def notify_failure(
-    failed_step: str, error_message: str, screenshot_path: str, execution_time: str
-) -> bool:
+def notify_failure(failed_step: str, error_message: str, screenshot_path: str, summary: dict) -> bool:
     """
     Soan va gui email bao FAILED, dinh kem anh chup man hinh luc loi.
     Neu screenshot_path rong "" (chup that bai), van gui email nhung khong dinh kem anh.
@@ -71,16 +75,16 @@ def notify_failure(
 
     template = _jinja_env.get_template("email_failed.html")
     body_html = template.render(
-        execution_time=execution_time,
         failed_step=failed_step,
         error_message=error_message,
         environment=BROWSER.capitalize(),
+        **summary,
     )
 
-    attachments = [screenshot_path] if screenshot_path else []
+    inline_images = {"screenshot": screenshot_path} if screenshot_path else {}
 
     return send_email(
         subject=SUBJECT_FAILED,
         body_html=body_html,
-        attachments=attachments,
+        inline_images=inline_images,
     )

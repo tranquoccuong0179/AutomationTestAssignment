@@ -40,6 +40,7 @@ class ResultCollector:
         self.skipped: int = 0
         self.error: int = 0
         self.failures: list[dict] = []
+        self.artifact_path: str = ""
 
     def start(self) -> None:
         """
@@ -57,6 +58,7 @@ class ResultCollector:
         self.skipped = 0
         self.error = 0
         self.failures.clear()
+        self.artifact_path = ""
         logger.info("Bat dau phien test luc: %s", now_readable())
 
     def finish(self, passed: int, failed: int, skipped: int = 0, error: int = 0) -> None:
@@ -88,6 +90,17 @@ class ResultCollector:
             "screenshot_path": screenshot_path,
         })
         logger.error("Ghi nhan test fail: %s | Loi: %s", failed_step, error_message)
+
+    def record_artifact(self, path) -> None:
+        """
+        Ghi lai duong dan file .zip da tai/doi ten thanh cong - de run.py
+        biet duoc file nao can dinh kem khi goi email_service.notify_success(),
+        vi collector khong tu chay Selenium nen khong the tu biet duong dan
+        nay - phai duoc test_github_release.py CHU DONG bao lai sau khi
+        file_service.wait_and_rename() tra ve.
+        """
+        self.artifact_path = str(path)
+        logger.info("Ghi nhan file ket qua: %s", self.artifact_path)
 
     def get_first_failure(self) -> dict:
         """Tra ve chi tiet test fail dau tien (dung cho notify_failure())."""

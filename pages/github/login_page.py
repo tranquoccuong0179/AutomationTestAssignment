@@ -45,12 +45,12 @@ class LoginPage(BasePage):
         self.input_text(PASSWORD_INPUT, password)
         self.safe_click(SUBMIT_BUTTON)
 
-    def is_logged_in(self) -> bool:
+    def is_logged_in(self, timeout: int = 10) -> bool:
         """
         Kiem tra da login thanh cong hay chua, bang cach tim avatar user
         o goc tren phai trang - element nay CHI xuat hien khi da dang nhap.
         """
-        logged_in = self.is_element_present(USER_AVATAR, timeout=10)
+        logged_in = self.is_element_present(USER_AVATAR, timeout=timeout)
         if logged_in:
             logger.info("Login thanh cong.")
         else:
