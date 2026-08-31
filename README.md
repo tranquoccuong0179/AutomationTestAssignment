@@ -88,6 +88,9 @@ AssignmentSelenium/
 │   ├── driver_factory.py                 # Khởi tạo và cấu hình Chrome WebDriver
 │   └── logger.py                         # Cấu hình centralized logging cho console và file
 │
+├── docs/                                 # Tài liệu phục vụ review và bàn giao project
+│   └── TestCases.xlsx                    # Danh sách test case, expected result, status và evidence
+│
 ├── pages/                                # Page Object Model
 │   └── github/                           # Các Page Object dành cho GitHub
 │       ├── __init__.py                   # Đánh dấu github là Python package
