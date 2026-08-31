@@ -30,25 +30,47 @@ def notify_success(zip_path: str, summary: dict) -> bool:
         **summary,
     )
 
-    return send_email(
+    sent = send_email(
         subject=SUBJECT_PASSED,
         body_html=body_html,
         attachments=[str(artifact)],
+    )
+    if sent:
+        logger.info("Email PASSED da gui thanh cong kem attachment.")
+        return True
+
+    logger.warning(
+        "Khong the gui email kem attachment. "
+        "Thu gui lai email PASSED khong kem file."
+    )
+
+    return send_email(
+        subject=SUBJECT_PASSED,
+        body_html=body_html,
+        attachments=[],
     )
 
 
 def notify_failure(failed_step: str, error_message: str, screenshot_path: str, summary: dict) -> bool:
     logger.info("Dang soan email FAILED cho buoc: %s", failed_step)
 
+    attachments = []
+    if screenshot_path:
+        screenshot_file = Path(screenshot_path)
+        if screenshot_file.is_file():
+            attachments.append(str(screenshot_file))
+        else:
+            logger.error("Khong tim thay file screenshot: %s", screenshot_file)
+            screenshot_path = ""
+            
     template = _jinja_env.get_template("email_failed.html")
     body_html = template.render(
         failed_step=failed_step,
         error_message=error_message,
+        screenshot_attached=bool(attachments),
         environment=BROWSER.capitalize(),
         **summary,
     )
-
-    attachments = [screenshot_path] if screenshot_path else []
 
     return send_email(
         subject=SUBJECT_FAILED,

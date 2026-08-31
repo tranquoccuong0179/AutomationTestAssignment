@@ -35,8 +35,15 @@
         </tr>
     </table>
 
-    <p style="margin-top: 16px;">Anh chup man hinh luc loi:</p>
-    <img src="cid:screenshot" style="max-width: 100%; border: 1px solid #d1d9e0; border-radius: 6px; margin-top: 4px;">
+    {% if screenshot_attached %}
+    <p style="margin-top: 16px;">
+        Ảnh chụp màn hình lúc lỗi được đính kèm theo email.
+    </p>
+    {% else %}
+    <p style="margin-top: 16px; color: #d1242f;">
+        Không thể tạo ảnh chụp màn hình tại thời điểm xảy ra lỗi.
+    </p>
+    {% endif %}
 
     <hr style="margin-top: 24px; border: none; border-top: 1px solid #d1d9e0;">
     <p style="color: #656d76; font-size: 12px;">

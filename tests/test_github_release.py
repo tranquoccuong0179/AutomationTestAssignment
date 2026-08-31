@@ -3,9 +3,11 @@ from core.logger import get_logger
 from pages.github.login_page import LoginPage
 from pages.github.search_page import SearchPage
 from pages.github.release_page import ReleasePage
+from pages.github.home_page import HomePage
 from services import file_service
 from services.report_service import collector
 from utils.datetime_helper import get_today_str
+import pytest
 
 logger = get_logger(__name__)
 
@@ -15,17 +17,24 @@ class TestGithubBootstrapDownload:
         login_page = LoginPage(driver)
         search_page = SearchPage(driver)
         release_page = ReleasePage(driver)
+        home_page = HomePage(driver)
 
+        # Open GitHub and login
+        home_page.open_home_page()
+        home_page.click_sign_in()
         # Login
-        login_page.open_login_page()
         login_page.login(GITHUB_USERNAME, GITHUB_PASSWORD)
 
-        logger.info(">>> Neu bi hoi xac minh thiet bi, xac nhan thu cong trong 45s... <<<")
+        logger.info(">>> Neu bi hoi xac minh thiet bi, xac nhan thu cong trong 55s... <<<")
 
         logged_in = False
 
-        for _ in range(45):
-            if login_page.is_logged_in(timeout=1):
+        for _ in range(9):
+            if login_page.has_login_error(timeout=1):
+                error_message = login_page.get_error_message()
+                pytest.fail(f"Login GitHub that bai: {error_message}")
+
+            if login_page.is_logged_in(timeout=5):
                 logged_in = True
                 break
 
@@ -35,7 +44,6 @@ class TestGithubBootstrapDownload:
         )
 
         # Search repository
-        search_page.open_home()
         search_page.search_and_open_first_result("Bootstrap")
 
         assert "bootstrap" in driver.current_url.lower(), (

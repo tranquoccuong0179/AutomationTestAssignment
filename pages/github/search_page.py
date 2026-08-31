@@ -32,16 +32,15 @@ RESULTS_CONTAINER = (By.CSS_SELECTOR, "[data-testid='results-list'], .repo-list"
 
 
 class SearchPage(BasePage):
-    def open_home(self) -> None:
-        self.open(GITHUB_HOME_URL)
-
     def search(self, keyword: str) -> None:
         logger.info("Dang tim kiem tu khoa: %s", keyword)
 
         if self.is_element_present(SEARCH_TRIGGER, timeout=2):
             try:
                 self.safe_click(SEARCH_TRIGGER)
-                self.input_text(SEARCH_INPUT, f"{keyword}{Keys.ENTER}")
+                self.input_text(SEARCH_INPUT, keyword)
+                search_input = self.wait_visible(SEARCH_INPUT)
+                search_input.send_keys(Keys.ENTER)
                 return
             except (
                 TimeoutException,
@@ -54,24 +53,30 @@ class SearchPage(BasePage):
         query = quote_plus(keyword)
         self.open(f"{GITHUB_HOME_URL}/search?q={query}&type=repositories")
 
-    def click_first_result(self) -> None:
+    def click_first_result(self) -> str:
         self.wait_visible(RESULTS_CONTAINER)
         candidates = self.driver.find_elements(*RESULT_LINKS)
 
         for candidate in candidates:
             href = candidate.get_attribute("href") or ""
             match = REPO_LINK_PATTERN.match(href)
+            if not match:
+                continue
 
-            if match and match.group(1).lower() not in RESERVED_PATH_PREFIXES:
-                logger.info("Da tim thay link repo hop le, dang click: %s", href)
-                self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", candidate)
-                candidate.click()
-                return
+            owner = match.group(1)
+            repository = match.group(2)
+            if owner.lower() in RESERVED_PATH_PREFIXES:
+                continue
+
+            repository_name = f"{owner}/{repository}"
+            logger.info("Da tim thay repository hop le, dang click: %s", repository_name)
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", candidate)
+            candidate.click()
+            return repository_name
 
         logger.error("Khong tim thay link repo hop le nao trong ket qua tim kiem")
         raise RuntimeError("Khong tim thay link repository hop le (dang github.com/owner/repo) trong ket qua tim kiem")
 
-    def search_and_open_first_result(self, keyword: str) -> None:
-        """Ham tien loi: gop search() + click_first_result() thanh 1 buoc."""
+    def search_and_open_first_result(self, keyword: str) -> str:
         self.search(keyword)
-        self.click_first_result()
+        return self.click_first_result()
