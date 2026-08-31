@@ -24,7 +24,7 @@ class LoginPage(BasePage):
         if logged_in:
             logger.info("Login thanh cong.")
         else:
-            logger.error("Login that bai hoac chua xac nhan duoc trang thai.")
+            logger.debug("Chua xac nhan duoc trang thai login.")
         return logged_in
 
     def has_login_error(self, timeout: int = 1) -> bool:

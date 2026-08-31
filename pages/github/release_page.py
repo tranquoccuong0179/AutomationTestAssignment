@@ -1,9 +1,17 @@
 import re
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
 from core.base_page import BasePage
 from core.logger import get_logger
+
+from selenium.common.exceptions import (
+    ElementClickInterceptedException,
+    NoSuchElementException,
+    StaleElementReferenceException,
+    TimeoutException,
+)
 
 logger = get_logger(__name__)
 
@@ -17,7 +25,7 @@ SIDEBAR_LATEST_RELEASE = (
 
 SOURCE_CODE_ZIP_LINK = (
     By.XPATH,
-    "//a[contains(@href, '/archive/refs/tags/') and (contains(@href, '.zip') or contains(., 'Source code (zip)'))]",
+    "//a[contains(@href, '/archive/refs/tags/') and contains(@href, '.zip')]",
 )
 
 RELEASE_CONTAINER = (
@@ -55,7 +63,12 @@ class ReleasePage(BasePage):
         try:
             self.open_latest_from_ui()
             logger.info("Mo release bang UI sidebar thanh cong.")
-        except Exception as error:
+        except (
+            TimeoutException,
+            NoSuchElementException,
+            ElementClickInterceptedException,
+            StaleElementReferenceException,
+        ) as error:
             logger.warning("Khong click duoc bang UI sidebar (%s). Chuyen sang fallback mo URL.", error)
             self.open_latest_release_url()
 
@@ -74,5 +87,7 @@ class ReleasePage(BasePage):
     def download_source_zip(self) -> None:
         logger.info("Dang click de tai Source code (zip)")
         self.driver.execute_script("document.querySelectorAll('details').forEach(el => el.open = true);")
-        self.scroll_to(SOURCE_CODE_ZIP_LINK)
-        self.safe_click(SOURCE_CODE_ZIP_LINK)
+        element = self.wait_visible(SOURCE_CODE_ZIP_LINK)
+        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
+        self.driver.execute_script("arguments[0].click();", element)
+        logger.info("Da click tai Source code (zip) thanh cong")

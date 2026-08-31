@@ -12,7 +12,6 @@ DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 _configured = False
 
-
 def _setup_logger() -> None:
     global _configured
 

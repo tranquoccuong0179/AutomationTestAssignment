@@ -2,7 +2,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, ElementClickInterceptedException
 
-from configs.settings import IMPLICIT_WAIT
+from configs.settings import DEFAULT_TIMEOUT
 from core.logger import get_logger
 
 logger = get_logger(__name__)
@@ -11,7 +11,7 @@ logger = get_logger(__name__)
 class BasePage:
     def __init__(self, driver, timeout: int = None):
         self.driver = driver
-        self.timeout = timeout if timeout is not None else IMPLICIT_WAIT
+        self.timeout = timeout if timeout is not None else DEFAULT_TIMEOUT
         self.wait = WebDriverWait(self.driver, self.timeout)
 
     def open(self, url: str) -> None:

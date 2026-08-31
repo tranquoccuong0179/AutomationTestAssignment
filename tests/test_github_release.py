@@ -13,6 +13,8 @@ logger = get_logger(__name__)
 
 
 class TestGithubBootstrapDownload:
+    LIBRARY_NAME = "Bootstrap"
+
     def test_github_bootstrap_download(self, driver):
         login_page = LoginPage(driver)
         search_page = SearchPage(driver)
@@ -30,8 +32,6 @@ class TestGithubBootstrapDownload:
         collector.set_current_step("3 Login GitHub")
         login_page.login(GITHUB_USERNAME, GITHUB_PASSWORD)
 
-        logger.info(">>> Neu bi hoi xac minh thiet bi, xac nhan thu cong trong 55s... <<<")
-
         collector.set_current_step("4 Verify GitHub login")
         logged_in = False
         for _ in range(9):
@@ -48,11 +48,11 @@ class TestGithubBootstrapDownload:
             "Het thoi gian cho hoac thong tin sai."
         )
 
-        collector.set_current_step("5 search_and_open_first_result")
         # Search repository
-        search_page.search_and_open_first_result("Bootstrap")
+        collector.set_current_step("5 search_and_open_first_result")
+        search_page.search_and_open_first_result(self.LIBRARY_NAME)
 
-        assert "bootstrap" in driver.current_url.lower(), (
+        assert self.LIBRARY_NAME.lower() in driver.current_url.lower(), (
             f"Khong vao dung trang repo Bootstrap, "
             f"URL hien tai: {driver.current_url}"
         )
@@ -70,15 +70,13 @@ class TestGithubBootstrapDownload:
         collector.set_current_step("9 download_source_zip")
         release_page.download_source_zip()
 
-        new_filename = (
-            f"{get_today_str()}_ThuVien_Bootstrap_v{version}.zip"
-        )
+        new_filename = (f"{get_today_str()}_ThuVien_{self.LIBRARY_NAME}_v{version}.zip")
 
+        collector.set_current_step("10 Wait and rename downloaded file")
         zip_path = file_service.wait_and_rename(new_filename)
 
-        assert zip_path.exists(), (
-            f"File .zip khong duoc tao ra: {zip_path}"
-        )
+        collector.set_current_step("11 Verify downloaded ZIP")
+        assert zip_path.exists(), (f"File .zip khong duoc tao ra: {zip_path}")
 
         collector.record_artifact(zip_path)
 

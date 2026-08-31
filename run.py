@@ -23,9 +23,7 @@ def main() -> int:
 
     Path("reports/html").mkdir(parents=True, exist_ok=True)
 
-    exit_code = pytest.main(
-        ["-v", "-s", "--html=reports/html/report.html", "--self-contained-html"]
-    )
+    exit_code = pytest.main()
     summary = collector.to_summary_dict()
     logger.info("Ket qua sau khi pytest chay xong: %s", summary)
 

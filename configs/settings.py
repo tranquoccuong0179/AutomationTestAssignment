@@ -25,7 +25,7 @@ GITHUB_PASSWORD = os.getenv("GITHUB_PASSWORD", "")
 
 BROWSER = os.getenv("BROWSER", "chrome").lower()
 HEADLESS = _get_bool("HEADLESS", default=False)
-IMPLICIT_WAIT = _get_int("IMPLICIT_WAIT", default=10)
+DEFAULT_TIMEOUT = _get_int("DEFAULT_TIMEOUT", default=10)
 
 DOWNLOAD_DIR = str((BASE_DIR / os.getenv("DOWNLOAD_DIR", "./downloads")).resolve())
 
@@ -38,16 +38,13 @@ EMAIL_TO = os.getenv("EMAIL_TO", "")
 
 
 def validate() -> None:
-    """
-    Kiem tra nhanh cac bien bat buoc da duoc dien chua.
-    Goi ham nay o dau run.py de fail som neu thieu config,
-    thay vi de Selenium/SMTP bao loi kho hieu ve sau.
-    """
     missing = []
     required = {
         "GITHUB_USERNAME": GITHUB_USERNAME,
         "GITHUB_PASSWORD": GITHUB_PASSWORD,
         "SMTP_HOST": SMTP_HOST,
+        "SMTP_USERNAME": SMTP_USERNAME,
+        "SMTP_PASSWORD": SMTP_PASSWORD,
         "EMAIL_FROM": EMAIL_FROM,
         "EMAIL_TO": EMAIL_TO,
     }
