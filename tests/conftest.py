@@ -7,7 +7,6 @@ from utils.screenshot_helper import capture_screenshot
 
 logger = get_logger(__name__)
 
-
 @pytest.fixture(scope="class")
 def driver():
     logger.info("Fixture 'driver': dang khoi tao Chrome...")
@@ -16,10 +15,8 @@ def driver():
     logger.info("Fixture 'driver': dang dong Chrome...")
     drv.quit()
 
-
 def pytest_sessionstart(session) -> None:
     collector.start()
-
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
@@ -38,11 +35,10 @@ def pytest_runtest_makereport(item, call):
         error_message = str(call.excinfo.value) if call.excinfo else "Khong xac dinh duoc loi"
 
         collector.record_failure(
-            failed_step=item.nodeid,
+            failed_step=collector.current_step,
             error_message=error_message,
             screenshot_path=screenshot_path,
         )
-
 
 def pytest_terminal_summary(terminalreporter, exitstatus, config) -> None:
     stats = terminalreporter.stats

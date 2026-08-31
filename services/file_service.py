@@ -9,7 +9,7 @@ logger = get_logger(__name__)
 
 def prepare_download_folder(download_dir: str = DOWNLOAD_DIR) -> None:
     Path(download_dir).mkdir(parents=True, exist_ok=True)
-    clean_old_downloads(download_dir)
+    clean_old_downloads(download_dir, pattern="*.*")
 
 
 def wait_and_rename(new_filename: str, timeout: int = 60, download_dir: str = DOWNLOAD_DIR) -> Path:

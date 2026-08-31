@@ -18,6 +18,11 @@ class ResultCollector:
         self.error: int = 0
         self.failures: list[dict] = []
         self.artifact_path: str = ""
+        self.current_step: str = "Khong xac dinh"
+
+    def set_current_step(self, step: str) -> None:
+        self.current_step = step
+        logger.info("Bat dau buoc: %s", step)
 
     def start(self) -> None:
         self._start_time = time.time()
@@ -29,6 +34,7 @@ class ResultCollector:
         self.error = 0
         self.failures.clear()
         self.artifact_path = ""
+        self.current_step = "Khong xac dinh"
         logger.info("Bat dau phien test luc: %s", now_readable())
 
     def finish(self, passed: int, failed: int, skipped: int = 0, error: int = 0) -> None:
@@ -56,7 +62,6 @@ class ResultCollector:
         logger.info("Ghi nhan file ket qua: %s", self.artifact_path)
 
     def get_first_failure(self) -> dict:
-        """Tra ve chi tiet test fail dau tien (dung cho notify_failure())."""
         if not self.failures:
             return {
                 "failed_step": "Khong xac dinh",

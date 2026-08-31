@@ -13,9 +13,7 @@ INVALID_FILENAME_CHARS = re.compile(r'[<>:"/\\|?*]')
 def sanitize_filename(filename: str) -> str:
     return INVALID_FILENAME_CHARS.sub("_", filename)
 
-def wait_for_download_complete(
-    download_dir: str, timeout: int = 60, poll_interval: float = 1.0
-) -> Optional[Path]:
+def wait_for_download_complete(download_dir: str, timeout: int = 60, poll_interval: float = 1.0) -> Optional[Path]:
     download_path = Path(download_dir)
     elapsed = 0.0
 
