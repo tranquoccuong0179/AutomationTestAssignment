@@ -44,9 +44,9 @@ class TestGithubBootstrapDownload:
         )
 
         # Search repository
-        search_page.search_and_open_first_result("Bootstrap")
+        search_page.search_and_open_first_result("gin/gonic")
 
-        assert "bootstrap" in driver.current_url.lower(), (
+        assert "gin-gonic" in driver.current_url.lower(), (
             f"Khong vao dung trang repo Bootstrap, "
             f"URL hien tai: {driver.current_url}"
         )
@@ -54,13 +54,13 @@ class TestGithubBootstrapDownload:
         # Download latest release
         file_service.prepare_download_folder()
 
-        release_page.open_latest_release()
+        release_page.navigate_to_latest_release()
 
         version = release_page.get_latest_version()
         release_page.download_source_zip()
 
         new_filename = (
-            f"{get_today_str()}_ThuVien_Bootstrap_v{version}.zip"
+            f"{get_today_str()}_ThuVien_Gin_v{version}.zip"
         )
 
         zip_path = file_service.wait_and_rename(new_filename)
